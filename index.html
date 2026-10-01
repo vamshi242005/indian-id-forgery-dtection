@@ -26,19 +26,7 @@
                 </div>
             </div>
             
-            <!-- Connection Control -->
-            <div class="connection-box">
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-link input-icon"></i>
-                    <input type="text" id="backendUrl" placeholder="http://localhost:8005" value="http://localhost:8005" autocomplete="off">
-                </div>
-                <button id="testConnectionBtn" class="btn btn-secondary">
-                    <i class="fa-solid fa-plug"></i> Test Connection
-                </button>
-                <div id="connectionStatus" class="status-badge status-offline">
-                    <span class="dot"></span> <span id="statusText">Offline</span>
-                </div>
-            </div>
+            <!-- Connection Control Removed -->
         </header>
 
         <!-- Main Content Layout -->
@@ -59,6 +47,12 @@
                         </select>
                         <i class="fa-solid fa-chevron-down select-icon"></i>
                     </div>
+                </div>
+
+                <!-- Friendly Backend Connection Error (Hidden by default) -->
+                <div id="connectionErrorBanner" class="alert alert-danger hidden" style="margin-bottom: 20px; font-size: 0.9rem;">
+                    <i class="fa-solid fa-server"></i>
+                    <span>Service temporarily unavailable, please try again shortly.</span>
                 </div>
 
                 <!-- Drag & Drop Upload Zone -->

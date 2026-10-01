@@ -1,9 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // DOM Elements
-    const backendUrlInput = document.getElementById("backendUrl");
-    const testConnectionBtn = document.getElementById("testConnectionBtn");
-    const connectionStatus = document.getElementById("connectionStatus");
-    const statusText = document.getElementById("statusText");
+    const connectionErrorBanner = document.getElementById("connectionErrorBanner");
 
     const documentTypeSelect = document.getElementById("documentType");
     const dropZone = document.getElementById("dropZone");
@@ -35,66 +32,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let selectedFile = null;
 
-    // Load saved Backend URL from localStorage or default to http://localhost:8000
-    const savedUrl = localStorage.getItem("veridoc_backend_url");
-    if (savedUrl) {
-        backendUrlInput.value = savedUrl;
+    // Configuration: Auto-configure the backend address
+    // In production when served by the FastAPI backend, this remains empty to use relative paths.
+    // When using a bundler like Vite/React, this could be: const API_BASE_URL = process.env.API_URL || "";
+    let API_BASE_URL = "";
+    
+    // Auto-detect local development (frontend running separately on port 5500)
+    if (window.location.hostname === "localhost" && window.location.port === "5500") {
+        API_BASE_URL = "http://localhost:8005";
     }
 
-    function getBackendUrl() {
-        let url = backendUrlInput.value.trim();
-        if (!url) {
-            if (window.location.protocol.startsWith("http") && !window.location.host.includes("5500")) {
-                url = window.location.origin;
-            } else {
-                url = "http://localhost:8005";
-            }
-        }
-        return url.replace(/\/+$/, "");
-    }
-
-    // Save Backend URL on change
-    backendUrlInput.addEventListener("change", () => {
-        localStorage.setItem("veridoc_backend_url", getBackendUrl());
-        testBackendConnection();
-    });
-
-    // Test Connection to /health
-    async function testBackendConnection() {
-        const baseUrl = getBackendUrl();
-        connectionStatus.className = "status-badge status-offline";
-        statusText.textContent = "Connecting...";
-
+    // Background Health Check
+    async function performSilentHealthCheck() {
         try {
-            const resp = await fetch(`${baseUrl}/health`, {
+            const resp = await fetch(`${API_BASE_URL}/health`, {
                 method: "GET",
                 headers: {
                     "ngrok-skip-browser-warning": "true"
                 }
             });
-
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data.status === "ok") {
-                    connectionStatus.className = "status-badge status-online";
-                    statusText.textContent = "Online";
-                    return true;
-                }
+            if (!resp.ok) {
+                throw new Error("Server not responding with OK status");
             }
-            throw new Error("Server status not ok");
         } catch (err) {
-            connectionStatus.className = "status-badge status-offline";
-            statusText.textContent = "Offline";
-            return false;
+            console.warn("Backend health check failed:", err);
+            connectionErrorBanner.classList.remove("hidden");
         }
     }
 
-    testConnectionBtn.addEventListener("click", () => {
-        testBackendConnection();
-    });
-
-    // Test connection on load
-    testBackendConnection();
+    // Run health check silently on load without blocking UI
+    performSilentHealthCheck();
 
     // Drag and Drop Handling
     ["dragenter", "dragover"].forEach(eventName => {
@@ -166,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
         hideResults();
         setLoading(true);
 
-        const baseUrl = getBackendUrl();
         const docType = documentTypeSelect.value;
 
         const formData = new FormData();
@@ -174,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("file", selectedFile);
 
         try {
-            const response = await fetch(`${baseUrl}/predict`, {
+            const response = await fetch(`${API_BASE_URL}/predict`, {
                 method: "POST",
                 headers: {
                     "ngrok-skip-browser-warning": "true"
@@ -198,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Verification Request Error:", err);
             showError(
                 "Backend Connection Failed",
-                `Unable to reach backend at ${baseUrl}. Ensure the FastAPI server is running and CORS is enabled.`
+                `Unable to reach the backend server. Ensure the service is running and CORS is enabled.`
             );
         } finally {
             setLoading(false);
