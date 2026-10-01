@@ -8,7 +8,7 @@ app_port: 7860
 pinned: false
 ---
 
-# AI Document Forgery Detection & Visual Forensic Auditor
+# AI Document Forgery Detection & Visual Forensic Auditor.
 
 An end-to-end AI-powered system to verify Indian identity documents (**Aadhaar**, **PAN Card**, **Passport**, **Voter ID**) as **ORIGINAL** or **FAKE**. Built with **FastAPI**, **Keras / TensorFlow**, and **Google Gemini AI** for visual forensic audits.
 
