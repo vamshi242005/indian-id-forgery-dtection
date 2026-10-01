@@ -1,5 +1,6 @@
 ---
 title: Indian ID Document Forgery Detection
+members: Vamshi Das,H Shama Jain, Supritha H R, Suraksha S Shetty 
 emoji: 🛡️
 colorFrom: indigo
 colorTo: green
