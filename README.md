@@ -1,5 +1,5 @@
 ---
-title: Indian ID Document Forgery Detection
+title: Indian ID Document Forgery Detection.
 emoji: 🛡️
 colorFrom: indigo
 colorTo: green
