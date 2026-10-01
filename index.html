@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Forgery Detection & Forensic Audit</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>VeriDoc AI</h1>
+                    <span class="sub-title">Indian ID Forgery Detection & Gemini Forensic Auditor</span>
+                </div>
+            </div>
+            
+            <!-- Connection Control -->
+            <div class="connection-box">
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-link input-icon"></i>
+                    <input type="text" id="backendUrl" placeholder="http://localhost:8005" value="http://localhost:8005" autocomplete="off">
+                </div>
+                <button id="testConnectionBtn" class="btn btn-secondary">
+                    <i class="fa-solid fa-plug"></i> Test Connection
+                </button>
+                <div id="connectionStatus" class="status-badge status-offline">
+                    <span class="dot"></span> <span id="statusText">Offline</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Layout -->
+        <main class="main-layout">
+            <!-- Left Panel: Input & Control -->
+            <section class="card input-card">
+                <h2 class="card-title"><i class="fa-solid fa-file-shield"></i> Document Verification</h2>
+                
+                <!-- Document Type Selector -->
+                <div class="form-group">
+                    <label for="documentType"><i class="fa-solid fa-id-card"></i> Select Document Type</label>
+                    <div class="select-wrapper">
+                        <select id="documentType">
+                            <option value="aadhaar">Aadhaar Card</option>
+                            <option value="pan">PAN Card</option>
+                            <option value="passport">Passport</option>
+                            <option value="voterid">Voter ID</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Drag & Drop Upload Zone -->
+                <div class="form-group">
+                    <label><i class="fa-solid fa-upload"></i> Upload Document Image</label>
+                    <div id="dropZone" class="drop-zone">
+                        <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg, image/webp" class="file-input">
+                        <div id="uploadPrompt" class="upload-prompt">
+                            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                            <p class="drop-text">Drag & drop your document image here</p>
+                            <p class="browse-text">or <span class="highlight">browse from device</span></p>
+                            <span class="file-limits">Supports JPG, PNG, WEBP (Max 10MB)</span>
+                        </div>
+                        <div id="imagePreviewContainer" class="image-preview-container hidden">
+                            <img id="imagePreview" src="" alt="Document Preview">
+                            <button id="removeImageBtn" class="btn-icon btn-remove" title="Remove Image">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Action -->
+                <button id="checkDocBtn" class="btn btn-primary btn-block" disabled>
+                    <span class="btn-text"><i class="fa-solid fa-magnifying-glass"></i> Check Document Forgery</span>
+                    <div id="btnSpinner" class="spinner hidden"></div>
+                </button>
+            </section>
+
+            <!-- Right Panel: Results & Forensic Audit -->
+            <section class="card result-card">
+                <h2 class="card-title"><i class="fa-solid fa-square-poll-vertical"></i> Inspection Results</h2>
+                
+                <!-- Initial Empty State -->
+                <div id="emptyState" class="empty-state">
+                    <i class="fa-solid fa-file-waveform empty-icon"></i>
+                    <h3>No Audit Performed Yet</h3>
+                    <p>Select a document type, upload an image, and click "Check Document" to initiate AI classification and forensic inspection.</p>
+                </div>
+
+                <!-- Error Alert Box -->
+                <div id="errorAlert" class="alert alert-danger hidden">
+                    <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
+                    <div class="alert-content">
+                        <h4 id="errorTitle">Verification Failed</h4>
+                        <p id="errorMessage">An unexpected error occurred during verification.</p>
+                    </div>
+                </div>
+
+                <!-- Result Container -->
+                <div id="resultContainer" class="result-container hidden">
+                    <!-- Classification Badge Header -->
+                    <div class="badge-header">
+                        <div id="resultBadge" class="result-badge badge-original">
+                            <i id="badgeIcon" class="fa-solid fa-circle-check"></i>
+                            <span id="badgeLabel">ORIGINAL</span>
+                        </div>
+                        <div class="meta-doc">
+                            <span class="meta-label">Type:</span> <strong id="metaDocType">Aadhaar Card</strong>
+                        </div>
+                    </div>
+
+                    <!-- Confidence Bar Metric -->
+                    <div class="metric-box">
+                        <div class="metric-header">
+                            <span>Classification Confidence</span>
+                            <span id="confidencePct" class="confidence-val">0.0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="confidenceBar" class="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Gemini Forensic Explanation Box (When FAKE) -->
+                    <div id="geminiSection" class="gemini-section hidden">
+                        <div class="gemini-header">
+                            <i class="fa-solid fa-brain gemini-icon"></i>
+                            <h3>Gemini AI Forensic Audit</h3>
+                        </div>
+                        <div id="geminiExplanation" class="gemini-explanation">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Powered by TensorFlow & Google Gemini AI • Secure Identity Inspection</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
